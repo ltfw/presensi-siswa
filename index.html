@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absen Kelas</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f0f2f5;
+        margin: 0;
+      }
+      .container {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        width: 90%;
+        max-width: 500px;
+      }
+      h1 {
+        color: #333;
+      }
+      p {
+        color: #666;
+      }
+      .input-group {
+        margin-bottom: 1.5rem;
+        text-align: left;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: bold;
+        color: #555;
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+        font-size: 1rem;
+      }
+      .emoji-list {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+      }
+      .emoji-button {
+        background: none;
+        border: 2px solid transparent;
+        font-size: 2.5rem;
+        padding: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        border-radius: 8px;
+      }
+      .emoji-button:hover {
+        transform: scale(1.1);
+      }
+      .emoji-button.selected {
+        border-color: #007bff;
+        background-color: #eaf4ff;
+      }
+      button[type="submit"] {
+        width: 100%;
+        padding: 1rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      button[type="submit"]:hover {
+        background-color: #0056b3;
+      }
+      .message {
+        margin-top: 1rem;
+        color: green;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Absen Hari Ini</h1>
+      <p>Silakan masukkan nama dan pilih emoji untuk absen.</p>
+      <div class="input-group">
+        <label for="namaSiswa">Nama Siswa:</label>
+        <input
+          type="text"
+          id="namaSiswa"
+          placeholder="Contoh: Budi Santoso"
+          required
+        />
+      </div>
+      <div class="emoji-list">
+        <button type="button" class="emoji-button" data-emoji="😀">😀</button>
+        <button type="button" class="emoji-button" data-emoji="👍">👍</button>
+        <button type="button" class="emoji-button" data-emoji="🤩">🤩</button>
+        <button type="button" class="emoji-button" data-emoji="📚">📚</button>
+        <button type="button" class="emoji-button" data-emoji="🎉">🎉</button>
+      </div>
+      <button type="submit" id="submitAbsen">Absen</button>
+      <div class="message" id="message"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+      // Masukkan konfigurasi Firebase Anda di sini
+      const firebaseConfig = {
+        apiKey: "AIzaSyA4BSE7WRxGPMH2KlWGlpoLYMQZAAFwZ8k",
+        authDomain: "presensi-siswa-6a7d8.firebaseapp.com",
+        databaseURL: "https://presensi-siswa-6a7d8-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "presensi-siswa-6a7d8",
+        storageBucket: "presensi-siswa-6a7d8.firebasestorage.app",
+        messagingSenderId: "390572519275",
+        appId: "1:390572519275:web:7b2a0f6bab65afe44da62e",
+      };
+
+      // Inisialisasi Firebase
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+      const absenRef = database.ref("absen"); // 'absen' adalah nama tabel/node di database
+
+      const namaInput = document.getElementById("namaSiswa");
+      const emojiButtons = document.querySelectorAll(".emoji-button");
+      const submitButton = document.getElementById("submitAbsen");
+      const messageDiv = document.getElementById("message");
+
+      let selectedEmoji = "";
+
+      emojiButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          emojiButtons.forEach((btn) => btn.classList.remove("selected"));
+          button.classList.add("selected");
+          selectedEmoji = button.dataset.emoji;
+        });
+      });
+
+      submitButton.addEventListener("click", () => {
+        const nama = namaInput.value.trim();
+        if (nama === "" || selectedEmoji === "") {
+          messageDiv.textContent = "Nama dan emoji harus diisi!";
+          messageDiv.style.color = "red";
+          return;
+        }
+
+        // Kirim data absen ke Firebase
+        absenRef
+          .push({
+            nama: nama,
+            emoji: selectedEmoji,
+            timestamp: firebase.database.ServerValue.TIMESTAMP, // Mengambil waktu server
+          })
+          .then(() => {
+            messageDiv.textContent = "Absen berhasil!";
+            messageDiv.style.color = "green";
+            namaInput.value = "";
+            emojiButtons.forEach((btn) => btn.classList.remove("selected"));
+            selectedEmoji = "";
+          })
+          .catch((error) => {
+            messageDiv.textContent = "Gagal absen: " + error.message;
+            messageDiv.style.color = "red";
+          });
+      });
+    </script>
+
+  </body>
+</html>

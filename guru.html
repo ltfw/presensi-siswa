@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daftar Absen Guru</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background-color: #f0f2f5;
+        padding: 2rem;
+        margin: 0;
+      }
+      .container {
+        background-color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 800px;
+        margin: auto;
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+      }
+      .actions {
+        text-align: center;
+        margin-bottom: 1.5rem;
+      }
+      .actions button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s;
+      }
+      .actions button:hover {
+        opacity: 0.8;
+      }
+      #refreshButton {
+        background-color: #28a745;
+        color: white;
+      }
+      #clearButton {
+        background-color: #dc3545;
+        color: white;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1.5rem;
+      }
+      th,
+      td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      th {
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+      }
+      tr:nth-child(even) {
+        background-color: #f8f9fa;
+      }
+      .empty-message {
+        text-align: center;
+        color: #999;
+        margin-top: 2rem;
+      }
+      .actions button {
+        background-color: #dc3545;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Daftar Absen Siswa</h1>
+      <div class="actions">
+        <button id="clearButton">Hapus Data Absen</button>
+      </div>
+      <table id="absenTable">
+        <thead>
+          <tr>
+            <th>No.</th>
+            <th>Nama Siswa</th>
+            <th>Emoji Absen</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="emptyMessage" class="empty-message" style="display: none">
+        Belum ada siswa yang absen.
+      </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+      // Masukkan konfigurasi Firebase Anda di sini
+      const firebaseConfig = {
+        apiKey: "AIzaSyA4BSE7WRxGPMH2KlWGlpoLYMQZAAFwZ8k",
+        authDomain: "presensi-siswa-6a7d8.firebaseapp.com",
+        databaseURL: "https://presensi-siswa-6a7d8-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "presensi-siswa-6a7d8",
+        storageBucket: "presensi-siswa-6a7d8.firebasestorage.app",
+        messagingSenderId: "390572519275",
+        appId: "1:390572519275:web:7b2a0f6bab65afe44da62e",
+      };
+
+      // Inisialisasi Firebase
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+      const absenRef = database.ref("absen");
+
+      const tableBody = document.querySelector("#absenTable tbody");
+      const clearButton = document.getElementById("clearButton");
+      const emptyMessage = document.getElementById("emptyMessage");
+
+      // Mendengarkan perubahan data di Firebase secara real-time
+      absenRef.on("value", (snapshot) => {
+        const absenData = snapshot.val();
+        tableBody.innerHTML = ""; // Hapus data lama
+
+        if (!absenData) {
+          emptyMessage.style.display = "block";
+          return;
+        } else {
+          emptyMessage.style.display = "none";
+        }
+
+        let index = 1;
+        // Loop melalui data yang diterima dari Firebase
+        for (let key in absenData) {
+          const absen = absenData[key];
+          const row = document.createElement("tr");
+          row.innerHTML = `
+                    <td>${index++}</td>
+                    <td>${absen.nama}</td>
+                    <td>${absen.emoji}</td>
+                `;
+          tableBody.appendChild(row);
+        }
+      });
+
+      // Event listener untuk tombol hapus
+      clearButton.addEventListener("click", () => {
+        absenRef
+          .remove()
+          .then(() => {
+            // Data berhasil dihapus
+          })
+          .catch((error) => {
+            alert("Gagal menghapus data: " + error.message);
+          });
+      });
+    </script>
+  </body>
+</html>
